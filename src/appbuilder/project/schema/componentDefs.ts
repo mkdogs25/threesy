@@ -14,7 +14,7 @@ export const COMPONENT_DEFS: Record<ComponentType, ComponentDef> = {
   container: { type: 'container', label: 'Container', platforms: ['web', 'mobile'], isContainer: true, category: 'structure' },
   row: { type: 'row', label: 'Row', platforms: ['web', 'mobile'], isContainer: true, category: 'structure' },
   card: { type: 'card', label: 'Card', platforms: ['web', 'mobile'], isContainer: true, category: 'structure' },
-  modal: { type: 'modal', label: 'Modal', platforms: ['web', 'mobile'], isContainer: true, category: 'structure' },
+  modal: { type: 'modal', label: 'Popup', platforms: ['web', 'mobile'], isContainer: true, category: 'structure' },
   list: { type: 'list', label: 'List', platforms: ['web', 'mobile'], isContainer: true, category: 'structure' },
   listItem: { type: 'listItem', label: 'List Item', platforms: ['web', 'mobile'], isContainer: true, category: 'structure' },
 

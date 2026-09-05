@@ -8,7 +8,7 @@ import type {
   ComponentStyle,
   ComponentType,
 } from './types'
-import { isContainerType } from './componentDefs'
+import { COMPONENT_DEFS, isContainerType } from './componentDefs'
 
 export function defaultStyle(overrides: Partial<ComponentStyle> = {}): ComponentStyle {
   return {
@@ -80,7 +80,7 @@ const FRIENDLY_COUNTER: Record<string, number> = {}
 
 function friendlyName(type: ComponentType): string {
   FRIENDLY_COUNTER[type] = (FRIENDLY_COUNTER[type] ?? 0) + 1
-  const label = type.charAt(0).toUpperCase() + type.slice(1).replace(/([A-Z])/g, ' $1')
+  const label = COMPONENT_DEFS[type]?.label ?? type.charAt(0).toUpperCase() + type.slice(1).replace(/([A-Z])/g, ' $1')
   return FRIENDLY_COUNTER[type] === 1 ? label : `${label} ${FRIENDLY_COUNTER[type]}`
 }
 

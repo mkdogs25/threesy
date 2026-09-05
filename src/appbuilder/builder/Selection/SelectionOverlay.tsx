@@ -14,13 +14,20 @@ interface Rect {
 interface SelectionOverlayProps {
   containerRef: React.RefObject<HTMLDivElement | null>
   nodeRefs: React.RefObject<Map<string, HTMLElement>>
+  /** Current canvas zoom factor. The overlay renders inside the same
+   * CSS-scaled subtree as the content it outlines, so raw screen-pixel
+   * measurements (from getBoundingClientRect, which are post-scale) must be
+   * converted back to the subtree's local (pre-scale) units before being
+   * used as CSS values — otherwise the ancestor transform would scale them
+   * a second time. */
+  zoom: number
 }
 
 /** Draws a thin outline + resize handles sized to each selected component's
  * *actual* rendered bounds (measured live via getBoundingClientRect), never
  * a synthetic bounding volume — so selection always matches reality even
  * for auto-sized/flex-grown elements. */
-export function SelectionOverlay({ containerRef, nodeRefs }: SelectionOverlayProps) {
+export function SelectionOverlay({ containerRef, nodeRefs, zoom }: SelectionOverlayProps) {
   const project = useAppBuilderStore((s) => s.project)
   const selection = useAppBuilderStore((s) => s.selection)
   const updateComponent = useAppBuilderStore((s) => s.updateComponent)
@@ -41,10 +48,10 @@ export function SelectionOverlay({ containerRef, nodeRefs }: SelectionOverlayPro
         next.push({
           id,
           name: node.name,
-          top: r.top - containerRect.top + containerEl.scrollTop,
-          left: r.left - containerRect.left + containerEl.scrollLeft,
-          width: r.width,
-          height: r.height,
+          top: (r.top - containerRect.top) / zoom + containerEl.scrollTop,
+          left: (r.left - containerRect.left) / zoom + containerEl.scrollLeft,
+          width: r.width / zoom,
+          height: r.height / zoom,
           primary: id === selection[selection.length - 1],
         })
       }
@@ -57,7 +64,7 @@ export function SelectionOverlay({ containerRef, nodeRefs }: SelectionOverlayPro
       window.removeEventListener('resize', measure)
       clearInterval(interval)
     }
-  }, [selection, project, containerRef, nodeRefs])
+  }, [selection, project, containerRef, nodeRefs, zoom])
 
   function handleResizeStart(e: React.PointerEvent, id: string) {
     e.stopPropagation()
@@ -74,8 +81,8 @@ export function SelectionOverlay({ containerRef, nodeRefs }: SelectionOverlayPro
 
     function onMove(ev: PointerEvent) {
       updateComponent(id, {
-        width: Math.max(16, Math.round(startWidth + (ev.clientX - startX))),
-        height: Math.max(16, Math.round(startHeight + (ev.clientY - startY))),
+        width: Math.max(16, Math.round(startWidth + (ev.clientX - startX) / zoom)),
+        height: Math.max(16, Math.round(startHeight + (ev.clientY - startY) / zoom)),
       })
     }
     function onUp() {

@@ -1,10 +1,19 @@
-import { useRef, type DragEvent } from 'react'
+import { useRef, useState, type DragEvent, type WheelEvent } from 'react'
+import { Minus, Plus } from 'lucide-react'
 import { useAppBuilderStore } from '../../project/appBuilderStore'
 import { isContainerType } from '../../project/schema/componentDefs'
 import type { ComponentType } from '../../project/schema/types'
 import { ComponentRenderer } from '../Components/ComponentRenderer'
 import { SelectionOverlay } from '../Selection/SelectionOverlay'
 import { findPreset, tierFor } from './devicePresets'
+
+const ZOOM_MIN = 0.25
+const ZOOM_MAX = 2
+const ZOOM_STEP = 0.1
+
+function clampZoom(z: number): number {
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(z * 100) / 100))
+}
 
 function resolveDropTarget(
   targetEl: HTMLElement,
@@ -50,10 +59,17 @@ export function Canvas() {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const nodeRefs = useRef<Map<string, HTMLElement>>(new Map())
+  const [zoom, setZoom] = useState(1)
 
   const page = project.pages.find((p) => p.id === project.activePageId)
   const preset = findPreset(project.viewport)
   const tier = tierFor(project.viewport)
+
+  function handleWheelZoom(e: WheelEvent) {
+    if (!e.ctrlKey && !e.metaKey) return
+    e.preventDefault()
+    setZoom((z) => clampZoom(z - e.deltaY * 0.001))
+  }
 
   function registerRef(id: string, el: HTMLElement | null) {
     if (el) nodeRefs.current.set(id, el)
@@ -87,8 +103,15 @@ export function Canvas() {
   if (!page) return null
 
   return (
-    <div className="relative h-full w-full overflow-auto rounded-2xl bg-ink-100 p-10" onPointerDown={() => clearSelection()}>
-      <div className="mx-auto" style={{ width: preset.width }}>
+    <div
+      className="relative h-full w-full overflow-auto rounded-2xl bg-ink-100 p-10"
+      onPointerDown={() => clearSelection()}
+      onWheel={handleWheelZoom}
+    >
+      <div
+        className="mx-auto"
+        style={{ width: preset.width, transform: `scale(${zoom})`, transformOrigin: 'top center', transition: 'transform 0.1s' }}
+      >
         {preset.frame === 'phone' && (
           <div className="mb-2 flex justify-center text-[11px] font-medium text-ink-400">{preset.label}</div>
         )}
@@ -120,9 +143,41 @@ export function Canvas() {
               registerRef={registerRef}
               tier={tier}
             />
-            <SelectionOverlay containerRef={containerRef} nodeRefs={nodeRefs} />
+            <SelectionOverlay containerRef={containerRef} nodeRefs={nodeRefs} zoom={zoom} />
           </div>
         </div>
+      </div>
+
+      <div
+        className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full border border-ink-200 bg-surface px-1.5 py-1 shadow-sm"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={() => setZoom((z) => clampZoom(z - ZOOM_STEP))}
+          disabled={zoom <= ZOOM_MIN}
+          className="btn-icon h-6 w-6 disabled:opacity-30"
+          title="Zoom out"
+        >
+          <Minus size={13} />
+        </button>
+        <button
+          type="button"
+          onClick={() => setZoom(1)}
+          className="w-12 text-center text-[11px] font-medium text-ink-500 hover:text-ink-800"
+          title="Reset zoom"
+        >
+          {Math.round(zoom * 100)}%
+        </button>
+        <button
+          type="button"
+          onClick={() => setZoom((z) => clampZoom(z + ZOOM_STEP))}
+          disabled={zoom >= ZOOM_MAX}
+          className="btn-icon h-6 w-6 disabled:opacity-30"
+          title="Zoom in"
+        >
+          <Plus size={13} />
+        </button>
       </div>
     </div>
   )

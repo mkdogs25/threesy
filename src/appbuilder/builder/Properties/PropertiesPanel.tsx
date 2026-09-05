@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, Trash2 } from 'lucide-react'
 import { useAppBuilderStore } from '../../project/appBuilderStore'
 import { isContainerType } from '../../project/schema/componentDefs'
 import { Section } from '../../../components/common/Section'
@@ -9,6 +9,11 @@ import { MultiSelectPanel } from './MultiSelectPanel'
 
 const FONT_WEIGHTS = [400, 500, 600, 700] as const
 const ALIGN_OPTIONS = ['start', 'center', 'end', 'stretch', 'space-between'] as const
+const TEXT_ALIGN_OPTIONS = [
+  { id: 'left', icon: AlignLeft },
+  { id: 'center', icon: AlignCenter },
+  { id: 'right', icon: AlignRight },
+] as const
 
 function SizeField({ label, value, onChange }: { label: string; value: number | 'auto' | 'fill'; onChange: (v: number | 'auto' | 'fill') => void }) {
   return (
@@ -133,7 +138,25 @@ export function PropertiesPanel() {
       <Section title="Appearance" defaultOpen={false}>
         <label className="flex items-center justify-between gap-2 text-xs">
           <span className="text-ink-500">Background</span>
-          <input type="color" value={node.style.background === 'transparent' ? '#ffffff' : node.style.background} onChange={(e) => updateStyle(node.id, { background: e.target.value })} onBlur={commit} className="h-7 w-12 cursor-pointer rounded border border-ink-200 bg-transparent" />
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                updateStyle(node.id, { background: 'transparent' })
+                commit()
+              }}
+              className={`rounded-md px-2 py-1 text-[11px] font-medium ${node.style.background === 'transparent' ? 'bg-brand-500 text-white' : 'bg-ink-100 text-ink-500 hover:bg-ink-200'}`}
+            >
+              None
+            </button>
+            <input
+              type="color"
+              value={node.style.background === 'transparent' ? '#ffffff' : node.style.background}
+              onChange={(e) => updateStyle(node.id, { background: e.target.value })}
+              onBlur={commit}
+              className="h-7 w-12 cursor-pointer rounded border border-ink-200 bg-transparent"
+            />
+          </div>
         </label>
         <label className="flex items-center justify-between gap-2 text-xs">
           <span className="text-ink-500">Text colour</span>
@@ -150,11 +173,43 @@ export function PropertiesPanel() {
             ))}
           </div>
         </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-ink-500">Text alignment</span>
+          <div className="grid grid-cols-3 gap-1">
+            {TEXT_ALIGN_OPTIONS.map(({ id, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => updateStyle(node.id, { textAlign: id })}
+                className={`flex items-center justify-center rounded-md py-1.5 ${node.style.textAlign === id ? 'bg-brand-500 text-white' : 'bg-ink-100 text-ink-500 hover:bg-ink-200'}`}
+              >
+                <Icon size={13} />
+              </button>
+            ))}
+          </div>
+        </label>
         <Slider label="Corner radius" value={node.style.borderRadius} min={0} max={40} step={1} onChange={(v) => updateStyle(node.id, { borderRadius: v })} onCommit={commit} format={(v) => `${v}px`} />
         <label className="flex items-center gap-2 text-xs text-ink-600">
           <input type="checkbox" checked={node.style.shadow} onChange={(e) => updateStyle(node.id, { shadow: e.target.checked })} />
           Shadow
         </label>
+        <Slider label="Border thickness" value={node.style.borderWidth} min={0} max={8} step={1} onChange={(v) => updateStyle(node.id, { borderWidth: v })} onCommit={commit} format={(v) => `${v}px`} />
+        {node.style.borderWidth > 0 && (
+          <label className="flex items-center justify-between gap-2 text-xs">
+            <span className="text-ink-500">Border colour</span>
+            <input type="color" value={node.style.borderColor} onChange={(e) => updateStyle(node.id, { borderColor: e.target.value })} onBlur={commit} className="h-7 w-12 cursor-pointer rounded border border-ink-200 bg-transparent" />
+          </label>
+        )}
+        <Slider
+          label="Opacity"
+          value={Math.round(node.style.opacity * 100)}
+          min={0}
+          max={100}
+          step={1}
+          onChange={(v) => updateStyle(node.id, { opacity: v / 100 })}
+          onCommit={commit}
+          format={(v) => `${v}%`}
+        />
       </Section>
 
       <Section title="Layout" defaultOpen={false}>
