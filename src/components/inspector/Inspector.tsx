@@ -8,6 +8,7 @@ import { ModifiersSection } from './ModifiersSection'
 import { AnimationSection } from './AnimationSection'
 import { InteractionsSection } from './InteractionsSection'
 import { EnvironmentSection } from './EnvironmentSection'
+import { MultiSelectionPanel } from './MultiSelectionPanel'
 
 export function Inspector() {
   const objects = useProjectStore((s) => s.project.objects)
@@ -16,6 +17,12 @@ export function Inspector() {
   const removeObjects = useProjectStore((s) => s.removeObjects)
   const primaryId = selection[selection.length - 1]
   const object = objects.find((o) => o.id === primaryId)
+  const isGroup = object?.kind === 'group'
+
+  if (selection.length > 1) {
+    const selectedObjects = objects.filter((o) => selection.includes(o.id))
+    return <MultiSelectionPanel objects={selectedObjects} />
+  }
 
   if (!object) {
     return (
@@ -48,11 +55,21 @@ export function Inspector() {
         </button>
       </div>
       <TransformSection object={object} />
-      <ShapeSection object={object} />
-      <MaterialSection object={object} />
-      <ModifiersSection object={object} />
-      <AnimationSection object={object} />
-      <InteractionsSection object={object} />
+      {!isGroup && (
+        <>
+          <ShapeSection object={object} />
+          <MaterialSection object={object} />
+          <ModifiersSection object={object} />
+          <AnimationSection object={object} />
+          <InteractionsSection object={object} />
+        </>
+      )}
+      {isGroup && (
+        <p className="px-3 py-4 text-xs text-ink-400">
+          Groups only have a position, rotation, and scale — select a shape inside the group to edit its material,
+          animation, or combine settings.
+        </p>
+      )}
     </aside>
   )
 }

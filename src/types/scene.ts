@@ -156,7 +156,18 @@ export interface Keyframe {
   easing: EasingId
 }
 
-export type AnimationPresetId = 'float' | 'bounce' | 'rotate' | 'pulse' | 'shake' | 'slide' | 'fade' | 'none'
+export type AnimationPresetId =
+  | 'float'
+  | 'bounce'
+  | 'rotate'
+  | 'pulse'
+  | 'shake'
+  | 'slide'
+  | 'fade'
+  | 'spin'
+  | 'wobble'
+  | 'orbit'
+  | 'none'
 
 export interface AnimationTrack {
   duration: number // seconds

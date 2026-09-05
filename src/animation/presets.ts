@@ -41,6 +41,12 @@ export function evaluateAnimationPreset(preset: AnimationPresetId, t: number, du
       return { ...IDENTITY, positionDelta: [Math.sin(cycle * twoPi) * 0.4, 0, 0] }
     case 'fade':
       return { ...IDENTITY, opacityMultiplier: 0.35 + Math.abs(Math.sin(cycle * Math.PI)) * 0.65 }
+    case 'spin':
+      return { ...IDENTITY, rotationDelta: [0, cycle * 720, 0] }
+    case 'wobble':
+      return { ...IDENTITY, rotationDelta: [0, 0, Math.sin(cycle * twoPi * 3) * 15] }
+    case 'orbit':
+      return { ...IDENTITY, positionDelta: [Math.cos(cycle * twoPi) * 0.35, 0, Math.sin(cycle * twoPi) * 0.35] }
     default:
       return IDENTITY
   }

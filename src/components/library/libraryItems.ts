@@ -8,6 +8,7 @@ export interface LibraryItem {
 
 export const LIBRARY_ITEMS: LibraryItem[] = [
   // Shapes
+  { kind: 'text', label: 'Text', category: 'Shapes' },
   { kind: 'cube', label: 'Cube', category: 'Shapes' },
   { kind: 'roundedCube', label: 'Rounded Cube', category: 'Shapes' },
   { kind: 'sphere', label: 'Sphere', category: 'Shapes' },

@@ -1,14 +1,17 @@
 import { create } from 'zustand'
 import type {
+  BooleanOp,
   CameraSettings,
   EnvironmentSettings,
   MaterialSpec,
+  Modifier,
   ObjectKind,
   ProjectData,
   SceneObject,
   ShapeParams,
 } from '../types/scene'
 import { createEmptyProject, createSceneObject } from '../types/factories'
+import { computeLocalTransformForNewParent, type LocalTransform } from '../scene/objects/worldTransform'
 
 const HISTORY_LIMIT = 100
 
@@ -51,6 +54,7 @@ export interface ProjectStore {
   reparent: (id: string, parentId: string | null) => void
   groupSelection: () => void
   ungroup: (id: string) => void
+  applyBooleanToSelection: (op: BooleanOp) => void
 
   // Environment / camera
   updateEnvironment: (patch: Partial<EnvironmentSettings>) => void
@@ -232,11 +236,19 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     })),
 
   reparent: (id, parentId) => {
+    if (parentId === id) return
+    if (parentId && isDescendantOf(get().project.objects, parentId, id)) return
     get().commit()
+    // Preserve the object's on-screen position/rotation/scale across the
+    // re-parent by converting its current world transform into local
+    // coordinates relative to the new parent, using the live scene graph.
+    const localTransform = computeLocalTransformForNewParent(id, parentId)
     set((s) => ({
       project: {
         ...s.project,
-        objects: s.project.objects.map((o) => (o.id === id ? { ...o, parentId } : o)),
+        objects: s.project.objects.map((o) =>
+          o.id === id ? { ...o, parentId, ...(localTransform ?? {}) } : o,
+        ),
         updatedAt: Date.now(),
       },
       saveStatus: 'dirty',
@@ -247,7 +259,15 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const s = get()
     if (s.selection.length < 1) return
     get().commit()
-    const group = createSceneObject('group', { name: 'Group' })
+    // Groups start at the origin with no rotation/scale so grouping never
+    // moves the objects being grouped — their existing positions become
+    // local-space coordinates relative to this identity-transform parent.
+    const group = createSceneObject('group', {
+      name: 'Group',
+      position: [0, 0, 0],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+    })
     set((st) => ({
       project: {
         ...st.project,
@@ -262,14 +282,56 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }))
   },
 
+  // Pathfinder-style boolean combine: the first-selected object becomes the
+  // base shape, every other selected object becomes a "tool" cutting/adding/
+  // intersecting into it (and is hidden, matching the single-object flow in
+  // the inspector's Combine & Shape section).
+  applyBooleanToSelection: (op) => {
+    const ids = get().selection
+    if (ids.length < 2) return
+    get().commit()
+    const [baseId, ...toolIds] = ids
+    const toolIdSet = new Set(toolIds)
+    set((s) => ({
+      project: {
+        ...s.project,
+        objects: s.project.objects.map((o) => {
+          if (o.id === baseId) {
+            const newMods: Modifier[] = toolIds.map((toolId) => ({ type: 'boolean', op, toolId }))
+            return { ...o, modifiers: [...o.modifiers, ...newMods] }
+          }
+          if (toolIdSet.has(o.id)) return { ...o, visible: false }
+          return o
+        }),
+        updatedAt: Date.now(),
+      },
+      selection: [baseId],
+      saveStatus: 'dirty',
+    }))
+  },
+
   ungroup: (id) => {
     get().commit()
+    const s0 = get()
+    const groupParentId = s0.project.objects.find((o) => o.id === id)?.parentId ?? null
+    // Bake each child's world transform into its own position/rotation/scale
+    // (relative to whatever the group's own parent was, or the scene root)
+    // so ungrouping doesn't snap objects back to some other location.
+    const bakedTransforms = new Map<string, LocalTransform>()
+    for (const o of s0.project.objects) {
+      if (o.parentId === id) {
+        const t = computeLocalTransformForNewParent(o.id, groupParentId)
+        if (t) bakedTransforms.set(o.id, t)
+      }
+    }
     set((s) => ({
       project: {
         ...s.project,
         objects: s.project.objects
           .filter((o) => o.id !== id)
-          .map((o) => (o.parentId === id ? { ...o, parentId: null } : o)),
+          .map((o) =>
+            o.parentId === id ? { ...o, parentId: groupParentId, ...(bakedTransforms.get(o.id) ?? {}) } : o,
+          ),
         updatedAt: Date.now(),
       },
       saveStatus: 'dirty',
@@ -315,6 +377,21 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       }
     }),
 }))
+
+/** True if `candidateAncestorId` is `objectId` itself or one of its
+ * descendants — used to stop drag-to-reparent from creating a parent cycle
+ * (which would otherwise make the whole subtree vanish from render). */
+function isDescendantOf(objects: SceneObject[], candidateAncestorId: string, objectId: string): boolean {
+  let current = objects.find((o) => o.id === candidateAncestorId)
+  const visited = new Set<string>()
+  while (current) {
+    if (current.id === objectId) return true
+    if (visited.has(current.id)) return false
+    visited.add(current.id)
+    current = current.parentId ? objects.find((o) => o.id === current!.parentId) : undefined
+  }
+  return false
+}
 
 function pushHistory(s: ProjectStore): Partial<ProjectStore> {
   const snap = snapshot(s)

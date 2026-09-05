@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { Outlines } from '@react-three/drei'
-import { useMemo, useRef, useState } from 'react'
+import { type ReactNode, useMemo, useRef, useState } from 'react'
 import type { SceneObject } from '../../types/scene'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
@@ -20,9 +20,10 @@ import { runInteractionAction } from '../interactions/runAction'
 interface ObjectMeshProps {
   object: SceneObject
   allObjects: SceneObject[]
+  children?: ReactNode
 }
 
-export function ObjectMesh({ object, allObjects }: ObjectMeshProps) {
+export function ObjectMesh({ object, allObjects, children: nestedChildren }: ObjectMeshProps) {
   const select = useProjectStore((s) => s.select)
   const selection = useProjectStore((s) => s.selection)
   const openContextMenu = useUIStore((s) => s.openContextMenu)
@@ -59,6 +60,7 @@ export function ObjectMesh({ object, allObjects }: ObjectMeshProps) {
     let rotDelta: [number, number, number] = [0, 0, 0]
     let scaleMul: [number, number, number] = [1, 1, 1]
     let opacityMul = 1
+    let keyframeColor: string | undefined
 
     if (object.animation.keyframes.length > 0) {
       const time = useTimelineStore.getState().currentTime
@@ -67,6 +69,7 @@ export function ObjectMesh({ object, allObjects }: ObjectMeshProps) {
       if (sample.rotation) rotDelta = sample.rotation
       if (sample.scale) scaleMul = sample.scale
       if (sample.opacity !== undefined) opacityMul = sample.opacity
+      keyframeColor = sample.color
     } else if (object.animation.preset !== 'none') {
       const anim = evaluateAnimationPreset(object.animation.preset, state.clock.elapsedTime, object.animation.duration)
       posDelta = anim.positionDelta
@@ -98,13 +101,17 @@ export function ObjectMesh({ object, allObjects }: ObjectMeshProps) {
     if (materialRef.current) {
       const targetOpacity = object.material.opacity * opacityMul
       materialRef.current.opacity = THREE.MathUtils.lerp(materialRef.current.opacity, targetOpacity, Math.min(1, delta * 10))
-      materialRef.current.transparent = object.material.transparent || targetOpacity < 0.99
+      // Text objects render on a plane with a canvas texture whose alpha
+      // channel carries the glyph shapes — that must stay transparent so
+      // the plane's background doesn't paint over the scene as solid black,
+      // even though the object's own material.transparent flag is false.
+      materialRef.current.transparent = object.material.transparent || targetOpacity < 0.99 || object.kind === 'text'
       if (hoverAction?.action.type === 'colorChange' && hovered) {
         materialRef.current.color.set(hoverAction.action.color)
       } else if (clickAction?.action.type === 'colorChange' && activated) {
         materialRef.current.color.set(clickAction.action.color)
       } else {
-        materialRef.current.color.set(object.material.color)
+        materialRef.current.color.set(keyframeColor ?? object.material.color)
       }
     }
   })
@@ -185,6 +192,7 @@ export function ObjectMesh({ object, allObjects }: ObjectMeshProps) {
           </mesh>
         ))
       )}
+      {nestedChildren}
     </group>
   )
 }

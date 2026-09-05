@@ -15,6 +15,9 @@ const PRESETS: { id: AnimationPresetId; label: string }[] = [
   { id: 'shake', label: 'Shake' },
   { id: 'slide', label: 'Slide' },
   { id: 'fade', label: 'Fade' },
+  { id: 'spin', label: 'Spin' },
+  { id: 'wobble', label: 'Wobble' },
+  { id: 'orbit', label: 'Orbit' },
 ]
 
 const EASINGS: EasingId[] = ['linear', 'easeIn', 'easeOut', 'easeInOut', 'bounce']
@@ -43,6 +46,7 @@ export function AnimationSection({ object }: { object: SceneObject }) {
       rotation: object.rotation,
       scale: object.scale,
       opacity: object.material.opacity,
+      color: object.material.color,
       easing: 'easeInOut' as EasingId,
     }
     updateObject(object.id, { animation: { ...anim, preset: 'none', keyframes: [...anim.keyframes, kf] } })

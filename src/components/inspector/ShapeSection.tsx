@@ -80,6 +80,7 @@ export function ShapeSection({ object }: { object: SceneObject }) {
         <label className="flex flex-col gap-1 text-xs">
           <span className="text-ink-500">Text</span>
           <input
+            type="text"
             value={object.shape.text ?? ''}
             onChange={(e) => updateShape(object.id, { text: e.target.value })}
             onBlur={commit}
