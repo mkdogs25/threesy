@@ -1,5 +1,6 @@
 import type { AppBuilderProject, AppTarget, ComponentLayout, ComponentNode, ComponentStyle, ComponentType } from '../project/schema/types'
 import { createComponentNode, createPage } from '../project/schema/factories'
+import { DEFAULT_THEME } from '../project/schema/themes'
 
 type NodeOverrides = Partial<Omit<ComponentNode, 'style' | 'layout'>> & {
   style?: Partial<ComponentStyle>
@@ -49,5 +50,6 @@ export function buildTemplateProject(
     nodes: builder.nodes,
     viewport: target === 'web' ? 'desktop' : 'standardPhone',
     bottomNavId: null,
+    theme: DEFAULT_THEME,
   }
 }

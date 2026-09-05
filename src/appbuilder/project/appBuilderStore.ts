@@ -13,6 +13,7 @@ import type {
 import { createComponentNode, createEmptyProject, createPage } from './schema/factories'
 import { isContainerType } from './schema/componentDefs'
 import { collectSubtreeIds, isDescendant } from './history/tree'
+import { DEFAULT_THEME, retagThemedNodes, type ProjectTheme } from './schema/themes'
 
 const HISTORY_LIMIT = 100
 
@@ -52,6 +53,14 @@ interface AppBuilderStore {
   groupSelection: () => void
   ungroup: (id: string) => void
 
+  /** Switches to a preset (or previously-saved custom) theme. One
+   * undo-able step — pushes history itself. */
+  applyPresetTheme: (theme: ProjectTheme) => void
+  /** Live-edits the current theme (e.g. dragging a color picker or corner
+   * radius slider). Doesn't push history itself — callers commit() once
+   * the interaction ends, matching updateStyle's pattern. */
+  updateTheme: (patch: Partial<ProjectTheme>) => void
+
   addEvent: (componentId: string, trigger: InteractionTrigger, action: InteractionAction) => void
   updateEvent: (componentId: string, eventId: string, patch: { trigger?: InteractionTrigger; action?: InteractionAction }) => void
   removeEvent: (componentId: string, eventId: string) => void
@@ -83,7 +92,15 @@ export const useAppBuilderStore = create<AppBuilderStore>((set, get) => ({
   future: [],
   viewMode: 'design',
 
-  loadProject: (project) => set({ project, selection: [], past: [], future: [], saveStatus: 'saved', viewMode: 'design' }),
+  loadProject: (project) =>
+    set({
+      project: project.theme ? project : { ...project, theme: DEFAULT_THEME },
+      selection: [],
+      past: [],
+      future: [],
+      saveStatus: 'saved',
+      viewMode: 'design',
+    }),
   renameProject: (name) => set((s) => ({ project: { ...s.project, name, updatedAt: Date.now() }, saveStatus: 'dirty' })),
   setSaveStatus: (status) => set({ saveStatus: status }),
   setViewport: (viewport) => set((s) => ({ project: { ...s.project, viewport }, saveStatus: 'dirty' })),
@@ -102,7 +119,7 @@ export const useAppBuilderStore = create<AppBuilderStore>((set, get) => ({
 
   addComponent: (type, parentId, index) => {
     get().commit()
-    const node = createComponentNode(type, { parentId })
+    const node = createComponentNode(type, { parentId }, get().project.theme)
     set((s) => {
       const parent = s.project.nodes[parentId]
       if (!parent) return s
@@ -236,7 +253,7 @@ export const useAppBuilderStore = create<AppBuilderStore>((set, get) => ({
     if (!first?.parentId) return
     const parent = s0.project.nodes[first.parentId]
     get().commit()
-    const group = createComponentNode('container', { parentId: parent.id, name: 'Group' })
+    const group = createComponentNode('container', { parentId: parent.id, name: 'Group' }, s0.project.theme)
     set((s) => {
       const nodes = { ...s.project.nodes }
       const parentNode = nodes[parent.id]
@@ -311,10 +328,28 @@ export const useAppBuilderStore = create<AppBuilderStore>((set, get) => ({
     })
   },
 
+  applyPresetTheme: (theme) => {
+    get().commit()
+    set((s) => ({
+      project: { ...s.project, theme, nodes: retagThemedNodes(s.project.nodes, s.project.theme, theme), updatedAt: Date.now() },
+      saveStatus: 'dirty',
+    }))
+  },
+
+  updateTheme: (patch) =>
+    set((s) => {
+      const oldTheme = s.project.theme
+      const newTheme: ProjectTheme = { ...oldTheme, ...patch, id: 'custom', name: oldTheme.id === 'custom' ? oldTheme.name : 'Custom' }
+      return {
+        project: { ...s.project, theme: newTheme, nodes: retagThemedNodes(s.project.nodes, oldTheme, newTheme), updatedAt: Date.now() },
+        saveStatus: 'dirty',
+      }
+    }),
+
   addPage: (name) => {
     get().commit()
     const s0 = get()
-    const { page, root } = createPage(s0.project.target, name ?? `Page ${s0.project.pages.length + 1}`)
+    const { page, root } = createPage(s0.project.target, name ?? `Page ${s0.project.pages.length + 1}`, s0.project.theme)
     set((s) => ({
       project: {
         ...s.project,

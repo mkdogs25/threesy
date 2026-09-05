@@ -9,6 +9,7 @@ import type {
   ComponentType,
 } from './types'
 import { COMPONENT_DEFS, isContainerType } from './componentDefs'
+import { DEFAULT_THEME, themedStyleOverrides, type ProjectTheme } from './themes'
 
 export function defaultStyle(overrides: Partial<ComponentStyle> = {}): ComponentStyle {
   return {
@@ -24,6 +25,7 @@ export function defaultStyle(overrides: Partial<ComponentStyle> = {}): Component
     borderWidth: 0,
     borderColor: '#dfe2ea',
     opacity: 1,
+    fontFamily: '',
     ...overrides,
   }
 }
@@ -41,37 +43,41 @@ interface TypeDefaults {
   height?: ComponentNode['height']
 }
 
+// Colour and corner-radius values a project's theme owns are intentionally
+// absent here — themedStyleOverrides() supplies them at creation time (and
+// whenever the theme changes). What's left below is purely structural:
+// spacing, sizing, weights, alignment — the things a theme doesn't touch.
 const TYPE_DEFAULTS: Partial<Record<ComponentType, TypeDefaults>> = {
-  page: { style: { background: '#ffffff' }, width: 'fill', height: 'auto' },
-  screen: { style: { background: '#ffffff' }, width: 'fill', height: 'fill' },
+  page: { width: 'fill', height: 'auto' },
+  screen: { width: 'fill', height: 'fill' },
   container: { style: { padding: 16 }, width: 'fill' },
   row: { layout: { direction: 'row', align: 'center' }, width: 'fill' },
-  card: { style: { background: '#ffffff', padding: 16, borderRadius: 12, shadow: true, borderWidth: 1 }, width: 'fill' },
-  modal: { style: { background: '#ffffff', padding: 20, borderRadius: 16, shadow: true }, width: 320, height: 'auto' },
+  card: { style: { padding: 16, shadow: true, borderWidth: 1 }, width: 'fill' },
+  modal: { style: { padding: 20, shadow: true }, width: 320, height: 'auto' },
   list: { layout: { gap: 8 }, width: 'fill' },
   listItem: { layout: { direction: 'row', align: 'center', gap: 12 }, style: { padding: 12 }, width: 'fill' },
 
-  text: { text: 'Text', style: { color: '#545a72' } },
-  heading: { text: 'Heading', style: { fontSize: 28, fontWeight: 700, color: '#1a1d29' } },
-  button: { text: 'Button', style: { background: '#4f46e5', color: '#ffffff', padding: 12, borderRadius: 10, fontWeight: 600, textAlign: 'center' } },
-  image: { style: { background: '#e7e9f0', borderRadius: 8 }, width: 240, height: 160 },
-  input: { placeholder: 'Placeholder text', style: { background: '#ffffff', borderWidth: 1, padding: 12, borderRadius: 8 }, width: 'fill' },
+  text: { text: 'Text' },
+  heading: { text: 'Heading', style: { fontSize: 28, fontWeight: 700 } },
+  button: { text: 'Button', style: { padding: 12, fontWeight: 600, textAlign: 'center' } },
+  image: { style: { background: '#e7e9f0' }, width: 240, height: 160 },
+  input: { placeholder: 'Placeholder text', style: { borderWidth: 1, padding: 12 }, width: 'fill' },
   toggle: { width: 44, height: 24 },
   icon: { text: 'star', width: 24, height: 24 },
-  divider: { style: { background: '#dfe2ea' }, width: 'fill', height: 1 },
+  divider: { width: 'fill', height: 1 },
 
-  navbar: { layout: { direction: 'row', justify: 'space-between', align: 'center' }, style: { background: '#ffffff', padding: 16, shadow: true }, width: 'fill' },
-  sidebar: { style: { background: '#f8f9fb', padding: 16 }, layout: { gap: 8 }, width: 220, height: 'fill' },
+  navbar: { layout: { direction: 'row', justify: 'space-between', align: 'center' }, style: { padding: 16, shadow: true }, width: 'fill' },
+  sidebar: { style: { padding: 16 }, layout: { gap: 8 }, width: 220, height: 'fill' },
   hero: { style: { background: '#eef1ff', padding: 48 }, layout: { align: 'center', gap: 16 }, width: 'fill' },
   section: { style: { padding: 32 }, width: 'fill' },
   table: { width: 'fill' },
   form: { style: { padding: 16 }, layout: { gap: 12 }, width: 'fill' },
-  footer: { style: { background: '#1a1d29', color: '#ffffff', padding: 24 }, width: 'fill' },
+  footer: { style: { padding: 24 }, width: 'fill' },
   tabs: { layout: { direction: 'row', gap: 4 }, width: 'fill' },
 
-  appBar: { layout: { direction: 'row', align: 'center', justify: 'space-between' }, style: { background: '#4f46e5', color: '#ffffff', padding: 16 }, width: 'fill' },
+  appBar: { layout: { direction: 'row', align: 'center', justify: 'space-between' }, style: { padding: 16 }, width: 'fill' },
   bottomNav: { width: 'fill', height: 60 },
-  fab: { text: '+', style: { background: '#4f46e5', color: '#ffffff', borderRadius: 28, textAlign: 'center', fontSize: 22, shadow: true }, width: 56, height: 56 },
+  fab: { text: '+', style: { borderRadius: 28, textAlign: 'center', fontSize: 22, shadow: true }, width: 56, height: 56 },
   mobileForm: { style: { padding: 16 }, layout: { gap: 12 }, width: 'fill' },
   tabBar: { width: 'fill', height: 44 },
 }
@@ -84,7 +90,7 @@ function friendlyName(type: ComponentType): string {
   return FRIENDLY_COUNTER[type] === 1 ? label : `${label} ${FRIENDLY_COUNTER[type]}`
 }
 
-export function createComponentNode(type: ComponentType, overrides: Partial<ComponentNode> = {}): ComponentNode {
+export function createComponentNode(type: ComponentType, overrides: Partial<ComponentNode> = {}, theme: ProjectTheme = DEFAULT_THEME): ComponentNode {
   const defaults = TYPE_DEFAULTS[type] ?? {}
   return {
     id: uuid(),
@@ -93,7 +99,7 @@ export function createComponentNode(type: ComponentType, overrides: Partial<Comp
     parentId: null,
     children: [],
     layout: defaultLayout(defaults.layout),
-    style: defaultStyle(defaults.style),
+    style: defaultStyle({ ...defaults.style, ...themedStyleOverrides(theme, type) }),
     responsive: { tablet: 'default', mobile: 'default' },
     events: [],
     visible: true,
@@ -111,13 +117,17 @@ export function createComponentNode(type: ComponentType, overrides: Partial<Comp
 
 /** Creates a page/screen root node plus its AppPage entry, without wiring
  * it into a project's `nodes`/`pages` yet (caller does that). */
-export function createPage(target: AppTarget, name: string): { page: AppPage; root: ComponentNode } {
-  const root = createComponentNode(target === 'web' ? 'page' : 'screen', { name })
+export function createPage(target: AppTarget, name: string, theme: ProjectTheme = DEFAULT_THEME): { page: AppPage; root: ComponentNode } {
+  const root = createComponentNode(target === 'web' ? 'page' : 'screen', { name }, theme)
   return { page: { id: uuid(), name, rootId: root.id }, root }
 }
 
-export function createEmptyProject(target: AppTarget, name = target === 'web' ? 'Untitled Web App' : 'Untitled Phone App'): AppBuilderProject {
-  const { page, root } = createPage(target, target === 'web' ? 'Home' : 'Home')
+export function createEmptyProject(
+  target: AppTarget,
+  name = target === 'web' ? 'Untitled Web App' : 'Untitled Phone App',
+  theme: ProjectTheme = DEFAULT_THEME,
+): AppBuilderProject {
+  const { page, root } = createPage(target, target === 'web' ? 'Home' : 'Home', theme)
   const now = Date.now()
   return {
     id: uuid(),
@@ -130,6 +140,7 @@ export function createEmptyProject(target: AppTarget, name = target === 'web' ? 
     nodes: { [root.id]: root },
     viewport: target === 'web' ? 'desktop' : 'standardPhone',
     bottomNavId: null,
+    theme,
   }
 }
 

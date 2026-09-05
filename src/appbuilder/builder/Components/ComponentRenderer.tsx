@@ -131,7 +131,7 @@ export function ComponentRenderer({ project, nodeId, mode, selection = [], onSel
     case 'toggle': {
       const on = mode === 'preview' ? previewToggle : false
       return (
-        <div {...commonProps} style={{ ...style, background: on ? '#4f46e5' : '#dfe2ea', borderRadius: 999, position: 'relative', transition: 'background 0.15s' }}>
+        <div {...commonProps} style={{ ...style, background: on ? project.theme.primary : project.theme.border, borderRadius: 999, position: 'relative', transition: 'background 0.15s' }}>
           <div style={{ position: 'absolute', top: 2, left: on ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: 'white', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
         </div>
       )
@@ -172,7 +172,7 @@ export function ComponentRenderer({ project, nodeId, mode, selection = [], onSel
     case 'bottomNav':
     case 'tabBar':
       return (
-        <div {...commonProps} style={{ ...style, display: 'flex', flexDirection: 'row', borderTop: '1px solid #dfe2ea', background: node.style.background === 'transparent' ? '#ffffff' : node.style.background }}>
+        <div {...commonProps} style={{ ...style, display: 'flex', flexDirection: 'row', borderTop: `1px solid ${project.theme.border}`, background: node.style.background === 'transparent' ? project.theme.surface : node.style.background }}>
           {(node.navItems.length > 0 ? node.navItems : [{ id: '1', label: 'Home', icon: 'home', targetPageId: null }]).map((item) => (
             <div
               key={item.id}
@@ -185,7 +185,7 @@ export function ComponentRenderer({ project, nodeId, mode, selection = [], onSel
                   onTriggerEvent?.(nodeId, 'itemSelected', item.targetPageId)
                 }
               }}
-              style={{ color: node.style.color || '#545a72', cursor: 'pointer' }}
+              style={{ color: node.style.color || project.theme.textMuted, cursor: 'pointer' }}
             >
               <IconGlyph name={item.icon || 'circle'} size={18} />
               {item.label}

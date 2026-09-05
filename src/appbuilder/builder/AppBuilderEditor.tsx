@@ -5,6 +5,7 @@ import { Canvas } from './Canvas/Canvas'
 import { PropertiesPanel } from './Properties/PropertiesPanel'
 import { CommandBar } from './CommandBar/CommandBar'
 import { ExportDialog } from './ExportDialog'
+import { ThemeDialog } from './ThemeDialog'
 import { Preview } from '../preview/Preview'
 import { CodeView } from '../preview/CodeView'
 import { useAppBuilderStore } from '../project/appBuilderStore'
@@ -16,10 +17,11 @@ export function AppBuilderEditor() {
   useBuilderKeyboardShortcuts()
   const viewMode = useAppBuilderStore((s) => s.viewMode)
   const [exportOpen, setExportOpen] = useState(false)
+  const [themeOpen, setThemeOpen] = useState(false)
 
   return (
     <div className="flex h-full w-full flex-col gap-2 bg-ink-50 p-2">
-      <BuilderToolbar onExport={() => setExportOpen(true)} />
+      <BuilderToolbar onExport={() => setExportOpen(true)} onTheme={() => setThemeOpen(true)} />
 
       <div className="flex min-h-0 flex-1 gap-2">
         {viewMode === 'design' && <BuilderLeftPanel />}
@@ -34,6 +36,7 @@ export function AppBuilderEditor() {
       {viewMode === 'design' && <CommandBar />}
 
       {exportOpen && <ExportDialog onClose={() => setExportOpen(false)} />}
+      {themeOpen && <ThemeDialog onClose={() => setThemeOpen(false)} />}
     </div>
   )
 }

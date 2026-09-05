@@ -1,4 +1,4 @@
-import { Code2, Download, Eye, Pencil, Redo2, Undo2 } from 'lucide-react'
+import { Code2, Download, Eye, Palette, Pencil, Redo2, Undo2 } from 'lucide-react'
 import { Logo } from '../../components/common/Logo'
 import { IconButton } from '../../components/common/IconButton'
 import { ThemeToggle } from '../../components/common/ThemeToggle'
@@ -6,7 +6,7 @@ import { useAppBuilderStore } from '../project/appBuilderStore'
 import { useAppStore } from '../../state/appStore'
 import { presetsFor } from './Canvas/devicePresets'
 
-export function BuilderToolbar({ onExport }: { onExport: () => void }) {
+export function BuilderToolbar({ onExport, onTheme }: { onExport: () => void; onTheme: () => void }) {
   const project = useAppBuilderStore((s) => s.project)
   const renameProject = useAppBuilderStore((s) => s.renameProject)
   const undo = useAppBuilderStore((s) => s.undo)
@@ -74,6 +74,9 @@ export function BuilderToolbar({ onExport }: { onExport: () => void }) {
       </div>
 
       <span className="text-xs text-ink-400">{saveStatus === 'saved' ? 'Saved locally' : saveStatus === 'saving' ? 'Saving…' : 'Unsaved'}</span>
+      <IconButton label="Theme" onClick={onTheme}>
+        <Palette size={16} />
+      </IconButton>
       <ThemeToggle />
       <button type="button" onClick={onExport} className="flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">
         <Download size={14} /> Export

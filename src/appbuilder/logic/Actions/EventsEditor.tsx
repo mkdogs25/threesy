@@ -26,7 +26,7 @@ const ACTION_TYPES: { id: InteractionAction['type']; label: string }[] = [
   { id: 'goBack', label: 'Go back' },
 ]
 
-function defaultAction(type: InteractionAction['type'], firstPageId: string, firstOtherId: string): InteractionAction {
+function defaultAction(type: InteractionAction['type'], firstPageId: string, firstOtherId: string, primaryColor: string): InteractionAction {
   switch (type) {
     case 'navigate':
       return { type: 'navigate', pageId: firstPageId }
@@ -37,7 +37,7 @@ function defaultAction(type: InteractionAction['type'], firstPageId: string, fir
     case 'changeText':
       return { type: 'changeText', targetId: firstOtherId, text: 'New text' }
     case 'changeStyle':
-      return { type: 'changeStyle', targetId: firstOtherId, style: { background: '#4f46e5' } }
+      return { type: 'changeStyle', targetId: firstOtherId, style: { background: primaryColor } }
     case 'setValue':
       return { type: 'setValue', targetId: firstOtherId, value: '' }
     case 'openModal':
@@ -73,7 +73,7 @@ export function EventsEditor({ node }: { node: ComponentNode }) {
 
   function handleAdd() {
     commit()
-    addEvent(node.id, 'click', defaultAction('navigate', project.pages[0]?.id ?? '', otherNodes[0]?.id ?? ''))
+    addEvent(node.id, 'click', defaultAction('navigate', project.pages[0]?.id ?? '', otherNodes[0]?.id ?? '', project.theme.primary))
   }
 
   return (
@@ -103,7 +103,7 @@ export function EventsEditor({ node }: { node: ComponentNode }) {
             value={event.action.type}
             onChange={(e) =>
               updateEvent(node.id, event.id, {
-                action: defaultAction(e.target.value as InteractionAction['type'], project.pages[0]?.id ?? '', otherNodes[0]?.id ?? ''),
+                action: defaultAction(e.target.value as InteractionAction['type'], project.pages[0]?.id ?? '', otherNodes[0]?.id ?? '', project.theme.primary),
               })
             }
             className="rounded-md border border-ink-200 bg-surface px-2 py-1.5 text-xs"
@@ -160,7 +160,7 @@ export function EventsEditor({ node }: { node: ComponentNode }) {
           {event.action.type === 'changeStyle' && (
             <input
               type="color"
-              value={event.action.style.background ?? '#4f46e5'}
+              value={event.action.style.background ?? project.theme.primary}
               onChange={(e) => updateEvent(node.id, event.id, { action: { ...event.action, style: { background: e.target.value } } as InteractionAction })}
               className="h-7 w-12 cursor-pointer rounded border border-ink-200"
             />

@@ -68,6 +68,7 @@ export function computeCssDeclarations(node: ComponentNode, tier: ResponsiveTier
     decl['background-color'] = node.style.background
   }
   if (node.style.color) decl.color = node.style.color
+  if (node.style.fontFamily) decl['font-family'] = node.style.fontFamily
   if (node.style.fontSize) decl['font-size'] = `${node.style.fontSize}px`
   if (node.style.fontWeight) decl['font-weight'] = String(node.style.fontWeight)
   if (node.style.textAlign) decl['text-align'] = node.style.textAlign

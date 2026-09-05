@@ -4,6 +4,8 @@
 // project's visual state should ever be duplicated into separate
 // editor/preview/export representations.
 
+import type { ProjectTheme } from './themes'
+
 export type AppTarget = 'web' | 'mobile'
 
 /** Every component type that exists anywhere in the builder. Which ones are
@@ -70,6 +72,9 @@ export interface ComponentStyle {
   borderWidth: number
   borderColor: string
   opacity: number
+  /** CSS font-family stack. Only ever set on a page/screen root by the
+   * project's theme — other components inherit it and leave this empty. */
+  fontFamily: string
 }
 
 export type ResponsiveBehavior = 'default' | 'stack' | 'wrap' | 'hide' | 'resize' | 'fullWidth' | 'keepPosition'
@@ -150,6 +155,7 @@ export interface AppBuilderProject {
   nodes: Record<string, ComponentNode>
   viewport: DeviceViewport
   bottomNavId: string | null // mobile: id of the shared bottomNav component, if any
+  theme: ProjectTheme
 }
 
 export const APPBUILDER_FILE_VERSION = 1
