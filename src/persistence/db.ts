@@ -1,6 +1,5 @@
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb'
 import type { ProjectData } from '../types/scene'
-import type { WireframeProject } from '../types/wireframe'
 
 interface ThreesyDB extends DBSchema {
   projects: {
@@ -14,7 +13,7 @@ interface ThreesyDB extends DBSchema {
   }
   wireframes: {
     key: string
-    value: WireframeProject
+    value: unknown
     indexes: { 'by-updatedAt': number }
   }
 }
@@ -72,20 +71,4 @@ export async function getAsset(id: string): Promise<string | undefined> {
   const db = await getDb()
   const rec = await db.get('assets', id)
   return rec?.dataUrl
-}
-
-export async function saveWireframeToDb(project: WireframeProject): Promise<void> {
-  const db = await getDb()
-  await db.put('wireframes', project)
-}
-
-export async function listWireframes(): Promise<WireframeProject[]> {
-  const db = await getDb()
-  const all = await db.getAllFromIndex('wireframes', 'by-updatedAt')
-  return all.reverse()
-}
-
-export async function deleteWireframe(id: string): Promise<void> {
-  const db = await getDb()
-  await db.delete('wireframes', id)
 }

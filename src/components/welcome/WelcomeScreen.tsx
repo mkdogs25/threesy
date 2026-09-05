@@ -1,42 +1,45 @@
 import { FilePlus2, FolderOpen, LayoutTemplate, Sparkles, Trash2, Upload } from 'lucide-react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Logo } from '../common/Logo'
 import { useAppStore } from '../../state/appStore'
 import { useProjectStore } from '../../state/projectStore'
-import { useWireframeStore } from '../../state/wireframeStore'
+import { useAppBuilderStore } from '../../appbuilder/project/appBuilderStore'
 import { useUIStore } from '../../state/uiStore'
 import { useRecentProjects } from '../../persistence/useRecentProjects'
-import { useRecentWireframes } from '../../persistence/useRecentWireframes'
+import { useRecentAppBuilderProjects } from '../../appbuilder/project/persistence/useRecentProjects'
 import { createEmptyProject } from '../../types/factories'
-import { createEmptyWireframeProject } from '../../types/wireframeFactories'
 import { parseProjectFile, readFileAsText, ThreesyFileParseError } from '../../persistence/projectFile'
 import { TEMPLATES } from '../../templates'
 import { TemplateThumb } from '../library/TemplateThumb'
 import { ThemeToggle } from '../common/ThemeToggle'
+import { NewAppProjectDialog } from '../../appbuilder/templates/NewAppProjectDialog'
+import type { AppBuilderProject } from '../../appbuilder/project/schema/types'
 
 const IMPORT_ACCEPT = '.glb,.gltf,.obj,.fbx,.stl,.svg,.png,.jpg,.jpeg,.webp'
 
 export function WelcomeScreen() {
   const { projects, loading, remove } = useRecentProjects()
-  const { projects: wireframes, loading: wireframesLoading, remove: removeWireframe } = useRecentWireframes()
+  const { projects: appBuilderProjects, loading: appBuilderLoading, remove: removeAppBuilderProject } = useRecentAppBuilderProjects()
   const loadProject = useProjectStore((s) => s.loadProject)
-  const loadWireframeProject = useWireframeStore((s) => s.loadProject)
+  const loadAppBuilderProject = useAppBuilderStore((s) => s.loadProject)
   const goToEditor = useAppStore((s) => s.goToEditor)
-  const goToWireframe = useAppStore((s) => s.goToWireframe)
+  const goToAppBuilder = useAppStore((s) => s.goToAppBuilder)
   const showError = useUIStore((s) => s.showError)
   const openFileInput = useRef<HTMLInputElement>(null)
   const importFileInput = useRef<HTMLInputElement>(null)
+  const [newAppDialogOpen, setNewAppDialogOpen] = useState(false)
 
-  function handleNewMockup() {
-    loadWireframeProject(createEmptyWireframeProject())
-    goToWireframe()
+  function handleCreateAppBuilderProject(project: AppBuilderProject) {
+    loadAppBuilderProject(project)
+    setNewAppDialogOpen(false)
+    goToAppBuilder()
   }
 
-  function handleOpenRecentMockup(id: string) {
-    const project = wireframes.find((p) => p.id === id)
+  function handleOpenRecentAppBuilderProject(id: string) {
+    const project = appBuilderProjects.find((p) => p.id === id)
     if (!project) return
-    loadWireframeProject(project)
-    goToWireframe()
+    loadAppBuilderProject(project)
+    goToAppBuilder()
   }
 
   function handleNewProject() {
@@ -184,40 +187,42 @@ export function WelcomeScreen() {
                 <LayoutTemplate size={20} />
               </span>
               <div>
-                <h2 className="text-sm font-semibold text-ink-800">UI Mockups</h2>
+                <h2 className="text-sm font-semibold text-ink-800">App Builder</h2>
                 <p className="text-[11px] text-ink-400">
-                  Sketch screens and flows in 2D — wireframes with connections, no 3D required.
+                  Describe what you want, drag things around, connect simple actions, and export a real web or phone app. No code required.
                 </p>
               </div>
             </div>
             <button
               type="button"
-              onClick={handleNewMockup}
+              onClick={() => setNewAppDialogOpen(true)}
               className="flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-ink-800"
             >
-              <FilePlus2 size={16} /> New UI Mockup
+              <FilePlus2 size={16} /> New App
             </button>
           </div>
 
-          {!wireframesLoading && wireframes.length > 0 && (
+          {!appBuilderLoading && appBuilderProjects.length > 0 && (
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {wireframes.slice(0, 8).map((w) => (
+              {appBuilderProjects.slice(0, 8).map((p) => (
                 <div
-                  key={w.id}
+                  key={p.id}
                   className="group relative cursor-pointer overflow-hidden rounded-xl border border-ink-200 bg-surface p-3 text-left transition-transform hover:-translate-y-0.5"
-                  onClick={() => handleOpenRecentMockup(w.id)}
+                  onClick={() => handleOpenRecentAppBuilderProject(p.id)}
                 >
                   <div className="mb-2 flex h-16 items-center justify-center rounded-lg bg-ink-100">
                     <LayoutTemplate size={20} className="text-ink-400" />
                   </div>
-                  <p className="truncate text-xs font-semibold text-ink-800">{w.name}</p>
-                  <p className="text-[11px] text-ink-400">{new Date(w.updatedAt).toLocaleDateString()}</p>
+                  <p className="truncate text-xs font-semibold text-ink-800">{p.name}</p>
+                  <p className="text-[11px] text-ink-400">
+                    {p.target === 'web' ? '🌐 Web' : '📱 Phone'} · {new Date(p.updatedAt).toLocaleDateString()}
+                  </p>
                   <button
                     type="button"
-                    aria-label={`Delete ${w.name}`}
+                    aria-label={`Delete ${p.name}`}
                     onClick={(e) => {
                       e.stopPropagation()
-                      removeWireframe(w.id)
+                      removeAppBuilderProject(p.id)
                     }}
                     className="btn-icon absolute right-2 top-2 h-6 w-6 bg-surface/90 opacity-0 group-hover:opacity-100"
                   >
@@ -229,6 +234,10 @@ export function WelcomeScreen() {
           )}
         </section>
       </div>
+
+      {newAppDialogOpen && (
+        <NewAppProjectDialog onClose={() => setNewAppDialogOpen(false)} onCreate={handleCreateAppBuilderProject} />
+      )}
     </div>
   )
 }

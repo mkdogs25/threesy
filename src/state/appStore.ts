@@ -1,13 +1,13 @@
 import { create } from 'zustand'
 
-export type AppView = 'welcome' | 'editor' | 'wireframe'
+export type AppView = 'welcome' | 'editor' | 'appbuilder'
 
 interface AppState {
   view: AppView
   pendingImportFiles: File[] | null
   goToWelcome: () => void
   goToEditor: (pendingImportFiles?: File[]) => void
-  goToWireframe: () => void
+  goToAppBuilder: () => void
   clearPendingImportFiles: () => void
 }
 
@@ -16,6 +16,6 @@ export const useAppStore = create<AppState>((set) => ({
   pendingImportFiles: null,
   goToWelcome: () => set({ view: 'welcome' }),
   goToEditor: (pendingImportFiles) => set({ view: 'editor', pendingImportFiles: pendingImportFiles ?? null }),
-  goToWireframe: () => set({ view: 'wireframe' }),
+  goToAppBuilder: () => set({ view: 'appbuilder' }),
   clearPendingImportFiles: () => set({ pendingImportFiles: null }),
 }))
