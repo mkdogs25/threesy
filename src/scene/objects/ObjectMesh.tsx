@@ -174,7 +174,13 @@ export function ObjectMesh({ object, allObjects }: ObjectMeshProps) {
         >
             <meshPhysicalMaterial ref={i === 0 ? materialRef : undefined} {...materialProps} />
             {isSelected && (
-              <Outlines thickness={isPrimary ? 3 : 1.5} color={isPrimary ? '#6c8cff' : '#a3aefc'} screenspace transparent opacity={0.95} />
+              // Note: despite its name, drei's `screenspace` prop set to true offsets
+              // outline vertices by `thickness` in raw local/object-space units (not
+              // pixels) — for a unit-sized primitive that balloons into a shape many
+              // times the object's own size. Leaving it false (the default) uses the
+              // shader's other branch, which divides by clip-space w and viewport size
+              // to produce a thin, constant-pixel-width outline that hugs the mesh.
+              <Outlines thickness={isPrimary ? 3 : 1.5} color={isPrimary ? '#6c8cff' : '#a3aefc'} transparent opacity={0.95} />
             )}
           </mesh>
         ))
