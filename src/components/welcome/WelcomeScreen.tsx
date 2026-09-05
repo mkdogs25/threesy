@@ -1,4 +1,4 @@
-import { FilePlus2, FolderOpen, LayoutTemplate, Sparkles, Trash2, Upload } from 'lucide-react'
+import { FilePlus2, FolderOpen, FolderUp, LayoutTemplate, Sparkles, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Logo } from '../common/Logo'
 import { useAppStore } from '../../state/appStore'
@@ -13,6 +13,7 @@ import { TEMPLATES } from '../../templates'
 import { TemplateThumb } from '../library/TemplateThumb'
 import { ThemeToggle } from '../common/ThemeToggle'
 import { NewAppProjectDialog } from '../../appbuilder/templates/NewAppProjectDialog'
+import { ImportCodeDialog } from '../../appbuilder/import/ImportCodeDialog'
 import type { AppBuilderProject } from '../../appbuilder/project/schema/types'
 
 const IMPORT_ACCEPT = '.glb,.gltf,.obj,.fbx,.stl,.svg,.png,.jpg,.jpeg,.webp'
@@ -28,10 +29,17 @@ export function WelcomeScreen() {
   const openFileInput = useRef<HTMLInputElement>(null)
   const importFileInput = useRef<HTMLInputElement>(null)
   const [newAppDialogOpen, setNewAppDialogOpen] = useState(false)
+  const [importCodeOpen, setImportCodeOpen] = useState(false)
 
   function handleCreateAppBuilderProject(project: AppBuilderProject) {
     loadAppBuilderProject(project)
     setNewAppDialogOpen(false)
+    goToAppBuilder()
+  }
+
+  function handleImportCodeProject(project: AppBuilderProject) {
+    loadAppBuilderProject(project)
+    setImportCodeOpen(false)
     goToAppBuilder()
   }
 
@@ -193,13 +201,22 @@ export function WelcomeScreen() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setNewAppDialogOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-ink-800"
-            >
-              <FilePlus2 size={16} /> New App
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setImportCodeOpen(true)}
+                className="flex items-center gap-2 rounded-xl border border-ink-200 bg-surface px-4 py-2.5 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-50"
+              >
+                <FolderUp size={16} /> Upload Code
+              </button>
+              <button
+                type="button"
+                onClick={() => setNewAppDialogOpen(true)}
+                className="flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-ink-800"
+              >
+                <FilePlus2 size={16} /> New App
+              </button>
+            </div>
           </div>
 
           {!appBuilderLoading && appBuilderProjects.length > 0 && (
@@ -237,6 +254,9 @@ export function WelcomeScreen() {
 
       {newAppDialogOpen && (
         <NewAppProjectDialog onClose={() => setNewAppDialogOpen(false)} onCreate={handleCreateAppBuilderProject} />
+      )}
+      {importCodeOpen && (
+        <ImportCodeDialog onClose={() => setImportCodeOpen(false)} onImport={handleImportCodeProject} />
       )}
     </div>
   )

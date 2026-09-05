@@ -30,7 +30,7 @@ export function defaultStyle(overrides: Partial<ComponentStyle> = {}): Component
   }
 }
 
-function defaultLayout(overrides: Partial<ComponentLayout> = {}): ComponentLayout {
+export function defaultLayout(overrides: Partial<ComponentLayout> = {}): ComponentLayout {
   return { direction: 'column', gap: 12, align: 'stretch', justify: 'start', wrap: false, ...overrides }
 }
 
