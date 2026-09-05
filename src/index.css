@@ -1,0 +1,84 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --color-brand-50: #eef1ff;
+  --color-brand-100: #e0e5ff;
+  --color-brand-200: #c7cffe;
+  --color-brand-300: #a3aefc;
+  --color-brand-400: #7d8bf8;
+  --color-brand-500: #6c8cff;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #362f9e;
+  --color-brand-900: #2c2870;
+
+  --color-ink-50: #f8f9fb;
+  --color-ink-100: #eef0f4;
+  --color-ink-200: #dfe2ea;
+  --color-ink-300: #c4c9d6;
+  --color-ink-400: #9aa1b5;
+  --color-ink-500: #6f7690;
+  --color-ink-600: #545a72;
+  --color-ink-700: #3c4157;
+  --color-ink-800: #262a3b;
+  --color-ink-900: #1a1d29;
+  --color-ink-950: #0e0f18;
+
+  --animate-logo-spin: logo-spin 6s ease-in-out infinite;
+
+  @keyframes logo-spin {
+    0%, 100% { transform: rotateY(0deg); }
+    50% { transform: rotateY(20deg); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+  }
+}
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-ink-50 text-ink-900 antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-300) transparent;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.18s ease-out;
+  }
+  .animate-scale-in {
+    animation: scale-in 0.14s ease-out;
+  }
+  .panel {
+    @apply bg-white/90 backdrop-blur border border-ink-200/70 rounded-2xl shadow-[0_1px_2px_rgba(15,17,25,0.04),0_8px_24px_-12px_rgba(15,17,25,0.12)];
+  }
+  .btn-icon {
+    @apply inline-flex items-center justify-center rounded-lg text-ink-600 hover:bg-ink-100 hover:text-ink-900 transition-colors;
+  }
+}
