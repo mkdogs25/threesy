@@ -19,7 +19,7 @@ export function ViewportOverlay() {
 
   return (
     <div className="pointer-events-none absolute inset-0">
-      <div className="pointer-events-auto absolute left-3 top-3 flex flex-col gap-1 rounded-xl bg-white/90 p-1 shadow-md backdrop-blur">
+      <div className="pointer-events-auto absolute left-3 top-3 flex flex-col gap-1 rounded-xl bg-surface/90 p-1 shadow-md backdrop-blur">
         <IconButton label="Frame Selected" shortcut="F" onClick={() => frameSelected()}>
           <Maximize2 size={16} />
         </IconButton>
@@ -39,7 +39,7 @@ export function ViewportOverlay() {
         </IconButton>
       </div>
 
-      <div className="pointer-events-auto absolute bottom-3 left-3 flex gap-1 rounded-xl bg-white/90 p-1 text-[11px] font-medium text-ink-600 shadow-md backdrop-blur">
+      <div className="pointer-events-auto absolute bottom-3 left-3 flex gap-1 rounded-xl bg-surface/90 p-1 text-[11px] font-medium text-ink-600 shadow-md backdrop-blur">
         {VIEWS.map((v) => (
           <button
             key={v.id}

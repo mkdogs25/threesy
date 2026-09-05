@@ -45,7 +45,7 @@ export function MultiSelectionPanel({ objects }: { objects: SceneObject[] }) {
         <button
           type="button"
           onClick={groupSelection}
-          className="flex items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white py-2.5 text-sm font-semibold text-ink-700 hover:border-brand-400 hover:text-brand-600"
+          className="flex items-center justify-center gap-2 rounded-xl border border-ink-200 bg-surface py-2.5 text-sm font-semibold text-ink-700 hover:border-brand-400 hover:text-brand-600"
         >
           <Group size={16} /> Group
         </button>
@@ -62,7 +62,7 @@ export function MultiSelectionPanel({ objects }: { objects: SceneObject[] }) {
                 type="button"
                 title={action.hint}
                 onClick={() => applyBooleanToSelection(action.op)}
-                className="flex flex-col items-center gap-1.5 rounded-xl border border-ink-200 bg-white py-3 text-[11px] font-medium text-ink-600 hover:border-brand-400 hover:text-brand-600"
+                className="flex flex-col items-center gap-1.5 rounded-xl border border-ink-200 bg-surface py-3 text-[11px] font-medium text-ink-600 hover:border-brand-400 hover:text-brand-600"
               >
                 <action.icon size={16} />
                 {action.label}

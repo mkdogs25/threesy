@@ -59,7 +59,7 @@ export function ModifiersSection({ object }: { object: SceneObject }) {
         <select
           value={toolId}
           onChange={(e) => setToolId(e.target.value)}
-          className="rounded-md border border-ink-200 bg-white px-2 py-1.5 text-xs"
+          className="rounded-md border border-ink-200 bg-surface px-2 py-1.5 text-xs"
         >
           <option value="">Choose an object…</option>
           {others.map((o) => (
@@ -75,7 +75,7 @@ export function ModifiersSection({ object }: { object: SceneObject }) {
               type="button"
               disabled={!toolId}
               onClick={() => applyBoolean(op.id)}
-              className="flex flex-col items-center gap-1 rounded-lg border border-ink-200 bg-white py-2 text-[11px] font-medium text-ink-600 hover:border-brand-400 hover:text-brand-600 disabled:opacity-40"
+              className="flex flex-col items-center gap-1 rounded-lg border border-ink-200 bg-surface py-2 text-[11px] font-medium text-ink-600 hover:border-brand-400 hover:text-brand-600 disabled:opacity-40"
             >
               <op.icon size={14} />
               {op.label}

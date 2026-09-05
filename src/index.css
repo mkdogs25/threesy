@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+/* Tailwind v4 dark mode via a manually-toggled `.dark` class (rather than
+ * only `prefers-color-scheme`), so the in-app Light/Dark/System control can
+ * override the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 
@@ -26,6 +31,8 @@
   --color-ink-900: #1a1d29;
   --color-ink-950: #0e0f18;
 
+  --color-surface: #ffffff;
+
   --animate-logo-spin: logo-spin 6s ease-in-out infinite;
 
   @keyframes logo-spin {
@@ -42,6 +49,28 @@
   }
 }
 
+/* Inverting the ink scale under `.dark` re-themes almost every component for
+ * free, since the whole app consistently uses ink-50/100/200 for light
+ * surfaces and ink-600/700/800/900 for text — no per-component dark: classes
+ * needed for any of that. Only a handful of "always dark" chrome elements
+ * (modal backdrops, tooltips) were pulled off the ink scale separately so
+ * they don't flip along with everything else. */
+.dark {
+  --color-ink-50: #14151f;
+  --color-ink-100: #1b1d2a;
+  --color-ink-200: #282b3d;
+  --color-ink-300: #3a3e56;
+  --color-ink-400: #5c6178;
+  --color-ink-500: #848aa3;
+  --color-ink-600: #a7acc4;
+  --color-ink-700: #c4c8db;
+  --color-ink-800: #dde0ec;
+  --color-ink-900: #f2f3f9;
+  --color-ink-950: #ffffff;
+
+  --color-surface: #1c1e2b;
+}
+
 @layer base {
   html, body, #root {
     height: 100%;
@@ -49,6 +78,7 @@
   body {
     @apply bg-ink-50 text-ink-900 antialiased;
     font-feature-settings: 'cv11', 'ss01';
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
   * {
     scrollbar-width: thin;
@@ -76,7 +106,7 @@
     animation: scale-in 0.14s ease-out;
   }
   .panel {
-    @apply bg-white/90 backdrop-blur border border-ink-200/70 rounded-2xl shadow-[0_1px_2px_rgba(15,17,25,0.04),0_8px_24px_-12px_rgba(15,17,25,0.12)];
+    @apply bg-surface/90 backdrop-blur border border-ink-200/70 rounded-2xl shadow-[0_1px_2px_rgba(15,17,25,0.04),0_8px_24px_-12px_rgba(15,17,25,0.12)];
   }
   .btn-icon {
     @apply inline-flex items-center justify-center rounded-lg text-ink-600 hover:bg-ink-100 hover:text-ink-900 transition-colors;

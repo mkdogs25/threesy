@@ -87,6 +87,30 @@ export function ShapeSection({ object }: { object: SceneObject }) {
             className="rounded-md border border-ink-200 px-2 py-1.5 text-sm"
           />
         </label>
+        <Slider
+          label="Size"
+          value={object.shape.height ?? 0.6}
+          min={0.15}
+          max={2}
+          onChange={(v) => updateShape(object.id, { height: v })}
+          onCommit={commit}
+        />
+        <Slider
+          label="Depth"
+          value={object.shape.depth ?? 0.18}
+          min={0.02}
+          max={0.6}
+          onChange={(v) => updateShape(object.id, { depth: v })}
+          onCommit={commit}
+        />
+        <Slider
+          label="Corner Roundness"
+          value={object.shape.roundness ?? 0}
+          min={0}
+          max={1}
+          onChange={(v) => updateShape(object.id, { roundness: v })}
+          onCommit={commit}
+        />
       </Section>
     )
   }

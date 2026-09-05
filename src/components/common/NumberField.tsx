@@ -16,7 +16,7 @@ export function NumberField({ label, value, onChange, onCommit, step = 0.1 }: Nu
         step={step}
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
         onBlur={onCommit}
-        className="w-full min-w-0 rounded-md border border-ink-200 bg-white px-1.5 py-1 text-ink-800 tabular-nums focus:border-brand-400"
+        className="w-full min-w-0 rounded-md border border-ink-200 bg-surface px-1.5 py-1 text-ink-800 tabular-nums focus:border-brand-400"
       />
     </label>
   )

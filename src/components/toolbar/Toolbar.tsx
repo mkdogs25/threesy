@@ -2,6 +2,7 @@ import { Download, Eye, Move, RotateCw, Scale, Settings, Undo2, Redo2 } from 'lu
 import { Logo } from '../common/Logo'
 import { IconButton } from '../common/IconButton'
 import { SaveStatus } from './SaveStatus'
+import { ThemeToggle } from '../common/ThemeToggle'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useAppStore } from '../../state/appStore'
@@ -69,6 +70,7 @@ export function Toolbar() {
       >
         <Download size={14} /> Export
       </button>
+      <ThemeToggle />
       <IconButton label="Settings" onClick={() => setSettingsOpen(true)}>
         <Settings size={16} />
       </IconButton>

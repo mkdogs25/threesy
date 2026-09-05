@@ -1,6 +1,13 @@
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
+import { useThemeStore, type ThemePreference } from '../../state/themeStore'
 import { Dialog } from './Dialog'
+
+const THEME_OPTIONS: { id: ThemePreference; label: string }[] = [
+  { id: 'light', label: 'Light' },
+  { id: 'dark', label: 'Dark' },
+  { id: 'system', label: 'System' },
+]
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -26,12 +33,33 @@ export function SettingsDialog() {
   const updateEnvironment = useProjectStore((s) => s.updateEnvironment)
   const snapEnabled = useUIStore((s) => s.snapEnabled)
   const toggleSnap = useUIStore((s) => s.toggleSnap)
+  const themePreference = useThemeStore((s) => s.preference)
+  const setThemePreference = useThemeStore((s) => s.setPreference)
 
   if (!open) return null
 
   return (
     <Dialog title="Settings" onClose={() => setOpen(false)}>
-      <div className="divide-y divide-ink-100">
+      <div className="pb-3">
+        <p className="mb-1.5 text-sm text-ink-700">Appearance</p>
+        <div className="grid grid-cols-3 gap-1.5">
+          {THEME_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => setThemePreference(opt.id)}
+              className={`rounded-lg border py-1.5 text-xs font-medium ${
+                themePreference === opt.id
+                  ? 'border-brand-500 bg-brand-50 text-brand-700'
+                  : 'border-ink-200 text-ink-600 hover:border-brand-300'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="divide-y divide-ink-100 border-t border-ink-100">
         <Toggle label="Show grid" checked={environment.showGrid} onChange={(v) => updateEnvironment({ showGrid: v })} />
         <Toggle label="Show shadows" checked={environment.showShadows} onChange={(v) => updateEnvironment({ showShadows: v })} />
         <Toggle label="Orthographic camera" checked={environment.orthographic} onChange={(v) => updateEnvironment({ orthographic: v })} />

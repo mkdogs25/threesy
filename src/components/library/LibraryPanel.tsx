@@ -27,7 +27,7 @@ export function LibraryPanel() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search shapes & objects…"
-            className="w-full rounded-lg border border-ink-200 bg-ink-50 py-1.5 pl-7 pr-2 text-xs focus:border-brand-400 focus:bg-white"
+            className="w-full rounded-lg border border-ink-200 bg-ink-50 py-1.5 pl-7 pr-2 text-xs focus:border-brand-400 focus:bg-surface"
           />
         </div>
         <div className="mt-2 flex flex-wrap gap-1">
@@ -60,7 +60,7 @@ export function LibraryPanel() {
               }}
               onClick={() => addObject(item.kind, { name: friendlyName(item.kind) })}
               title={`Add ${item.label}`}
-              className="flex flex-col items-center gap-1.5 rounded-xl border border-ink-200 bg-white p-2.5 text-center transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md active:translate-y-0"
+              className="flex flex-col items-center gap-1.5 rounded-xl border border-ink-200 bg-surface p-2.5 text-center transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md active:translate-y-0"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
                 <Icon size={18} />

@@ -61,7 +61,7 @@ export function ContextMenu() {
     <div
       ref={ref}
       style={{ left: menu.x, top: menu.y }}
-      className="fixed z-[120] w-48 animate-scale-in rounded-xl border border-ink-200 bg-white py-1.5 shadow-xl"
+      className="fixed z-[120] w-48 animate-scale-in rounded-xl border border-ink-200 bg-surface py-1.5 shadow-xl"
     >
       {items.map((item) => (
         <button

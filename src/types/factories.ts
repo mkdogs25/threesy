@@ -44,7 +44,7 @@ const DEFAULT_SHAPE_BY_KIND: Partial<Record<ObjectKind, ShapeParams>> = {
   ring: { radius: 0.6, innerRadius: 0.3, segments: 32, arc: 1 },
   pyramid: { width: 1, height: 1, depth: 1, segments: 4 },
   roundedRect: { width: 1.2, height: 0.8, depth: 0.2, roundness: 0.15 },
-  text: { width: 1.6, height: 0.5, text: 'Hello' },
+  text: { height: 0.6, depth: 0.18, roundness: 0, text: 'Hello' },
 }
 
 export function defaultShapeFor(kind: ObjectKind): ShapeParams {

@@ -9,7 +9,6 @@ import { useTimelineStore } from '../../state/timelineStore'
 import { useResolvedGeometry } from './useResolvedGeometry'
 import { useMaterialProps } from '../materials/useMaterialProps'
 import { useObjectTexture } from '../materials/useObjectTexture'
-import { useTextTexture } from '../materials/useTextTexture'
 import { ImportedMesh } from './ImportedMesh'
 import { computeInstanceTransforms } from './instanceTransforms'
 import { evaluateAnimationPreset } from '../../animation/presets'
@@ -34,13 +33,7 @@ export function ObjectMesh({ object, allObjects, children: nestedChildren }: Obj
   const geometry = useResolvedGeometry(object, allObjects)
   const materialPropsBase = useMaterialProps(object.material)
   const texture = useObjectTexture(object.material.textureUrl)
-  const textTexture = useTextTexture(object.shape.text ?? 'Text', object.material.color)
-  const materialProps =
-    object.kind === 'text'
-      ? { ...materialPropsBase, map: textTexture, transparent: true, color: '#ffffff' }
-      : texture
-        ? { ...materialPropsBase, map: texture }
-        : materialPropsBase
+  const materialProps = texture ? { ...materialPropsBase, map: texture } : materialPropsBase
   const instances = useMemo(() => computeInstanceTransforms(object.modifiers), [object.modifiers])
 
   const groupRef = useRef<THREE.Group>(null)
@@ -101,11 +94,7 @@ export function ObjectMesh({ object, allObjects, children: nestedChildren }: Obj
     if (materialRef.current) {
       const targetOpacity = object.material.opacity * opacityMul
       materialRef.current.opacity = THREE.MathUtils.lerp(materialRef.current.opacity, targetOpacity, Math.min(1, delta * 10))
-      // Text objects render on a plane with a canvas texture whose alpha
-      // channel carries the glyph shapes — that must stay transparent so
-      // the plane's background doesn't paint over the scene as solid black,
-      // even though the object's own material.transparent flag is false.
-      materialRef.current.transparent = object.material.transparent || targetOpacity < 0.99 || object.kind === 'text'
+      materialRef.current.transparent = object.material.transparent || targetOpacity < 0.99
       if (hoverAction?.action.type === 'colorChange' && hovered) {
         materialRef.current.color.set(hoverAction.action.color)
       } else if (clickAction?.action.type === 'colorChange' && activated) {

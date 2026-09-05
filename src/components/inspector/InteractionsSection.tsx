@@ -57,7 +57,7 @@ export function InteractionsSection({ object }: { object: SceneObject }) {
             <select
               value={interaction.trigger}
               onChange={(e) => patch(interaction.id, { trigger: e.target.value as InteractionTrigger })}
-              className="flex-1 rounded-md border border-ink-200 bg-white px-1.5 py-1 text-[11px] capitalize"
+              className="flex-1 rounded-md border border-ink-200 bg-surface px-1.5 py-1 text-[11px] capitalize"
             >
               {TRIGGERS.map((t) => (
                 <option key={t} value={t}>
@@ -69,7 +69,7 @@ export function InteractionsSection({ object }: { object: SceneObject }) {
             <select
               value={interaction.action.type}
               onChange={(e) => patch(interaction.id, { action: defaultAction(e.target.value as InteractionAction['type']) })}
-              className="flex-1 rounded-md border border-ink-200 bg-white px-1.5 py-1 text-[11px]"
+              className="flex-1 rounded-md border border-ink-200 bg-surface px-1.5 py-1 text-[11px]"
             >
               {(Object.keys(ACTION_LABELS) as InteractionAction['type'][]).map((t) => (
                 <option key={t} value={t}>

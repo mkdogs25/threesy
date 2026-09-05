@@ -42,7 +42,7 @@ export function Inspector() {
         <input
           value={object.name}
           onChange={(e) => renameObject(object.id, e.target.value)}
-          className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1.5 py-1 text-sm font-semibold text-ink-800 hover:border-ink-200 focus:border-brand-400 focus:bg-white"
+          className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1.5 py-1 text-sm font-semibold text-ink-800 hover:border-ink-200 focus:border-brand-400 focus:bg-surface"
           aria-label="Object name"
         />
         <button

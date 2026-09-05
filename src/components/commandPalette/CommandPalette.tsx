@@ -37,12 +37,12 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-[110] flex items-start justify-center bg-ink-950/40 pt-[15vh] backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[110] flex items-start justify-center bg-black/40 pt-[15vh] backdrop-blur-sm animate-fade-in"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setOpen(false)
       }}
     >
-      <div className="w-full max-w-lg animate-scale-in overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="w-full max-w-lg animate-scale-in overflow-hidden rounded-2xl bg-surface shadow-2xl">
         <div className="flex items-center gap-2 border-b border-ink-100 px-4 py-3">
           <Search size={16} className="text-ink-400" />
           <input

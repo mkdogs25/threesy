@@ -1,24 +1,43 @@
-import { FilePlus2, FolderOpen, Sparkles, Trash2, Upload } from 'lucide-react'
+import { FilePlus2, FolderOpen, LayoutTemplate, Sparkles, Trash2, Upload } from 'lucide-react'
 import { useRef } from 'react'
 import { Logo } from '../common/Logo'
 import { useAppStore } from '../../state/appStore'
 import { useProjectStore } from '../../state/projectStore'
+import { useWireframeStore } from '../../state/wireframeStore'
 import { useUIStore } from '../../state/uiStore'
 import { useRecentProjects } from '../../persistence/useRecentProjects'
+import { useRecentWireframes } from '../../persistence/useRecentWireframes'
 import { createEmptyProject } from '../../types/factories'
+import { createEmptyWireframeProject } from '../../types/wireframeFactories'
 import { parseProjectFile, readFileAsText, ThreesyFileParseError } from '../../persistence/projectFile'
 import { TEMPLATES } from '../../templates'
 import { TemplateThumb } from '../library/TemplateThumb'
+import { ThemeToggle } from '../common/ThemeToggle'
 
 const IMPORT_ACCEPT = '.glb,.gltf,.obj,.fbx,.stl,.svg,.png,.jpg,.jpeg,.webp'
 
 export function WelcomeScreen() {
   const { projects, loading, remove } = useRecentProjects()
+  const { projects: wireframes, loading: wireframesLoading, remove: removeWireframe } = useRecentWireframes()
   const loadProject = useProjectStore((s) => s.loadProject)
+  const loadWireframeProject = useWireframeStore((s) => s.loadProject)
   const goToEditor = useAppStore((s) => s.goToEditor)
+  const goToWireframe = useAppStore((s) => s.goToWireframe)
   const showError = useUIStore((s) => s.showError)
   const openFileInput = useRef<HTMLInputElement>(null)
   const importFileInput = useRef<HTMLInputElement>(null)
+
+  function handleNewMockup() {
+    loadWireframeProject(createEmptyWireframeProject())
+    goToWireframe()
+  }
+
+  function handleOpenRecentMockup(id: string) {
+    const project = wireframes.find((p) => p.id === id)
+    if (!project) return
+    loadWireframeProject(project)
+    goToWireframe()
+  }
 
   function handleNewProject() {
     loadProject(createEmptyProject())
@@ -67,9 +86,12 @@ export function WelcomeScreen() {
   }
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-gradient-to-b from-ink-50 to-brand-50/40">
+    <div className="relative h-full w-full overflow-y-auto bg-gradient-to-b from-ink-50 to-brand-50/40 dark:to-brand-900/25">
+      <div className="absolute right-4 top-4 z-10">
+        <ThemeToggle />
+      </div>
       <div className="mx-auto flex max-w-5xl flex-col items-center px-6 py-16 text-center">
-        <div className="mb-6 rounded-3xl bg-white p-5 shadow-[0_4px_24px_-8px_rgba(76,90,220,0.35)] animate-scale-in">
+        <div className="mb-6 rounded-3xl bg-surface p-5 shadow-[0_4px_24px_-8px_rgba(76,90,220,0.35)] animate-scale-in">
           <Logo size={72} animated />
         </div>
         <h1 className="text-4xl font-semibold tracking-tight text-ink-900 sm:text-5xl">Make something 3D.</h1>
@@ -86,14 +108,14 @@ export function WelcomeScreen() {
           <button
             type="button"
             onClick={() => openFileInput.current?.click()}
-            className="flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-50"
+            className="flex items-center gap-2 rounded-xl border border-ink-200 bg-surface px-5 py-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-50"
           >
             <FolderOpen size={17} /> Open Project
           </button>
           <button
             type="button"
             onClick={() => importFileInput.current?.click()}
-            className="flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-5 py-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-50"
+            className="flex items-center gap-2 rounded-xl border border-ink-200 bg-surface px-5 py-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-50"
           >
             <Upload size={17} /> Import 3D Model
           </button>
@@ -123,7 +145,7 @@ export function WelcomeScreen() {
                       e.stopPropagation()
                       remove(p.id)
                     }}
-                    className="btn-icon absolute right-2 top-2 h-6 w-6 bg-white/90 opacity-0 group-hover:opacity-100"
+                    className="btn-icon absolute right-2 top-2 h-6 w-6 bg-surface/90 opacity-0 group-hover:opacity-100"
                   >
                     <Trash2 size={12} />
                   </button>
@@ -153,6 +175,58 @@ export function WelcomeScreen() {
               </button>
             ))}
           </div>
+        </section>
+
+        <section className="mt-16 w-full rounded-3xl border border-dashed border-ink-300 bg-surface/60 p-6 text-left">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+                <LayoutTemplate size={20} />
+              </span>
+              <div>
+                <h2 className="text-sm font-semibold text-ink-800">UI Mockups</h2>
+                <p className="text-[11px] text-ink-400">
+                  Sketch screens and flows in 2D — wireframes with connections, no 3D required.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleNewMockup}
+              className="flex items-center gap-2 rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-ink-800"
+            >
+              <FilePlus2 size={16} /> New UI Mockup
+            </button>
+          </div>
+
+          {!wireframesLoading && wireframes.length > 0 && (
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {wireframes.slice(0, 8).map((w) => (
+                <div
+                  key={w.id}
+                  className="group relative cursor-pointer overflow-hidden rounded-xl border border-ink-200 bg-surface p-3 text-left transition-transform hover:-translate-y-0.5"
+                  onClick={() => handleOpenRecentMockup(w.id)}
+                >
+                  <div className="mb-2 flex h-16 items-center justify-center rounded-lg bg-ink-100">
+                    <LayoutTemplate size={20} className="text-ink-400" />
+                  </div>
+                  <p className="truncate text-xs font-semibold text-ink-800">{w.name}</p>
+                  <p className="text-[11px] text-ink-400">{new Date(w.updatedAt).toLocaleDateString()}</p>
+                  <button
+                    type="button"
+                    aria-label={`Delete ${w.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeWireframe(w.id)
+                    }}
+                    className="btn-icon absolute right-2 top-2 h-6 w-6 bg-surface/90 opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb'
 import type { ProjectData } from '../types/scene'
+import type { WireframeProject } from '../types/wireframe'
 
 interface ThreesyDB extends DBSchema {
   projects: {
@@ -11,17 +12,30 @@ interface ThreesyDB extends DBSchema {
     key: string
     value: { id: string; dataUrl: string }
   }
+  wireframes: {
+    key: string
+    value: WireframeProject
+    indexes: { 'by-updatedAt': number }
+  }
 }
+
+const DB_VERSION = 2
 
 let dbPromise: Promise<IDBPDatabase<ThreesyDB>> | null = null
 
 function getDb() {
   if (!dbPromise) {
-    dbPromise = openDB<ThreesyDB>('threesy', 1, {
-      upgrade(db) {
-        const store = db.createObjectStore('projects', { keyPath: 'id' })
-        store.createIndex('by-updatedAt', 'updatedAt')
-        db.createObjectStore('assets', { keyPath: 'id' })
+    dbPromise = openDB<ThreesyDB>('threesy', DB_VERSION, {
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          const store = db.createObjectStore('projects', { keyPath: 'id' })
+          store.createIndex('by-updatedAt', 'updatedAt')
+          db.createObjectStore('assets', { keyPath: 'id' })
+        }
+        if (oldVersion < 2) {
+          const wireframeStore = db.createObjectStore('wireframes', { keyPath: 'id' })
+          wireframeStore.createIndex('by-updatedAt', 'updatedAt')
+        }
       },
     })
   }
@@ -58,4 +72,20 @@ export async function getAsset(id: string): Promise<string | undefined> {
   const db = await getDb()
   const rec = await db.get('assets', id)
   return rec?.dataUrl
+}
+
+export async function saveWireframeToDb(project: WireframeProject): Promise<void> {
+  const db = await getDb()
+  await db.put('wireframes', project)
+}
+
+export async function listWireframes(): Promise<WireframeProject[]> {
+  const db = await getDb()
+  const all = await db.getAllFromIndex('wireframes', 'by-updatedAt')
+  return all.reverse()
+}
+
+export async function deleteWireframe(id: string): Promise<void> {
+  const db = await getDb()
+  await db.delete('wireframes', id)
 }
